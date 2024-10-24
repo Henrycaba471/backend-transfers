@@ -67,8 +67,8 @@ const login = async (req, res) => {
 
     try {
         const user = await User.findOne({ username: params.username });
-        console.log(user);
-        
+        //console.log(user);
+
         if (!user) {
             return res.status(400).json({
                 status: '400',
@@ -119,34 +119,34 @@ const sendTrans =  (req, res) => {
             <legend>Datos del banco</legend>
             <div>
                 <label for="banco">Banco:<span>*</sapn></label>
-                <input type="text" name="banco" id="banco" placeholder="Entidad Bancaria">
+                <input type="text" name="bankEntity" id="banco" placeholder="Entidad Bancaria">
                 <label for="tipo">Tipo Cuenta:</label>
-                <select name="tipo" id="tipo">
-                <option value="Ahorro">Ahorro</option>
-                <option value="Corriente">Corriente</option>
-                <option value="Pago Movil">Pago Movil</option>
+                <select name="accountType" id="tipo">
+                    <option value="Ahorro">Ahorro</option>
+                    <option value="Corriente">Corriente</option>
+                    <option value="Pago Movil">Pago Movil</option>
                 </select>
             </div>
             <div>
                 <label for="cuenta">N° Cuenta:<span>*</sapn></label>
-                <input type="text" name="cuenta" id="cuenta" placeholder="Numero de cuenta">
+                <input type="text" name="account" id="cuenta" placeholder="Numero de cuenta">
             </div>
             </fieldset>
             <fieldset>
             <legend>Datos del cliente</legend>
             <div>
                 <label for="nombre">Nombre Completo:</label>
-                <input type="text" name="nombre" id="nombre" placeholder="Nombre del cliente">
+                <input type="text" name="nameClient" id="nombre" placeholder="Nombre del cliente">
                 <label for="doqument">N° Documento:<span>*</sapn></label>
-                <input type="text" name="doqument" id="doqument" placeholder="N° de Documento">
+                <input type="text" name="documentClient" id="doqument" placeholder="N° de Documento">
             </div>
             </fieldset>
             <fieldset>
                 <legend>Valor</legend>
                 <label for="valor">Valor B$<span>*</span></label>
-                <input type="text" name="valor" id="valor" placeholder="Valor en soberanos">
+                <input type="text" name="cashBs" id="valor" placeholder="Valor en soberanos">
             </fieldset>
-            <button>Enviar e imprimir</button>
+            <button type="submit" id="btn-send">Enviar e imprimir</button>
         </form>`
     });
 }

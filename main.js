@@ -17,8 +17,10 @@ app.use(express.urlencoded({ extended: true }));
 connection();
 
 const userRoutes = require('./routes/user.routes');
+const transferRoutes = require('./routes/send.routes');
 
 app.use('/api/users', userRoutes);
+app.use('/api/transfers', transferRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
