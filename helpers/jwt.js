@@ -2,7 +2,7 @@ const jwt = require('jwt-simple');
 const moment = require('moment');
 
 const secretKey = process.env.SECRET_KEY;
-console.log('SECRET_KEY:', secretKey); // Agregar este log para depurar
+//console.log('SECRET_KEY:', secretKey); // Agregar este log para depurar
 
 const createToken = (user) => {
     if (!secretKey) {
