@@ -95,7 +95,8 @@ const login = async (req, res) => {
         return res.json({
             status: 400,
             msg: 'Oops sorry some is wrong',
-            error
+            error: error.message,
+            stack: error.stack
         });
     }
 }
