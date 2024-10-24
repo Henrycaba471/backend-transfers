@@ -16,6 +16,7 @@ const createToken = (user) => {
         phone: user.phone,
         username: user.username,
         profile: user.image,
+        gender: user.gender,
         iat: moment().unix(),
         exp: moment().add(30, "minutes").unix()
     };

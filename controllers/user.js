@@ -4,15 +4,17 @@ const jwt = require('../helpers/jwt');
 
 const register = async (req, res) => {
     let params = req.body;
-    params.name = params.name.toLowerCase();
-    params.lastname = params.lastname.toLowerCase();
 
-    if (!params.name || !params.lastname || !params.phone || !params.username || !params.password) {
+    if (!params.name || !params.lastname || !params.documento || !params.phone || !params.username || !params.password || !params.gender) {
         return res.json({
             error: true,
             msg: "You must complete all inputs"
         });
     }
+
+    params.name = params.name.toLowerCase();
+    params.lastname = params.lastname.toLowerCase();
+    params.gender = params.gender.toLowerCase();
 
     try {
         const existUser = await User.find({
@@ -65,7 +67,8 @@ const login = async (req, res) => {
 
     try {
         const user = await User.findOne({ username: params.username });
-
+        console.log(user);
+        
         if (!user) {
             return res.status(400).json({
                 status: '400',
@@ -102,6 +105,7 @@ const login = async (req, res) => {
 }
 
 const dashboard = async (req, res) => {
+
     return res.status(200).json({
         status: 200,
         user: req.user
