@@ -1,4 +1,7 @@
 const { Schema, model } = require('mongoose');
+const moment = require('moment-timezone');
+
+const colombiaDate = moment().tz("America/Bogota").format("YYYY-MM-DD HH:mm:ss");
 
 const SendSchema = Schema({
     user: {
@@ -35,8 +38,8 @@ const SendSchema = Schema({
         required: true
     },
     created_at: {
-        type: Date,
-        default: Date.now()
+        type: String,
+        default: colombiaDate
     }
 });
 

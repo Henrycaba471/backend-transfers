@@ -1,7 +1,15 @@
 const TransferSend = require('../models/TransferSend');
+const helperFunctions = require('../helpers/functions');
 
 const sendTransfer = async (req, res) => {
     let params = req.body
+    //console.log(params);
+
+    params.account = params.account.replace(/-/g, '');
+    params.documentClient = helperFunctions.convertirSinSeparador(params.documentClient);
+    params.cashBs = helperFunctions.convertirSinSeparador(params.cashBs);
+    //params.created_at = new Date();
+    //console.log(params);
 
     if (!params.bankEntity || !params.account || !params.documentClient || !params.cashBs) {
         return res.json({
@@ -17,11 +25,20 @@ const sendTransfer = async (req, res) => {
 
     try {
         const newSend = new TransferSend(params);
-        newSend.save();
+        await newSend.save();
+        //console.log(newSend);
+
+        const detailSend = await TransferSend.findById(newSend._id).populate({
+            path: 'user',
+            select: 'username documento phone'
+        });
+
+        //console.log(detailSend);
+
         return res.json({
             error: null,
             msg: 'Transacción exitosa',
-            newSend
+            detailSend
         });
 
     } catch (error) {

@@ -119,7 +119,7 @@ const sendTrans =  (req, res) => {
             <legend>Datos del banco</legend>
             <div>
                 <label for="banco">Banco:<span>*</sapn></label>
-                <input type="text" name="bankEntity" id="banco" placeholder="Entidad Bancaria">
+                <input type="text" name="bankEntity" id="banco" placeholder="Entidad Bancaria" oninput="soloLetrasYEspacios(this);" required>
                 <label for="tipo">Tipo Cuenta:</label>
                 <select name="accountType" id="tipo">
                     <option value="Ahorro">Ahorro</option>
@@ -129,22 +129,28 @@ const sendTrans =  (req, res) => {
             </div>
             <div>
                 <label for="cuenta">N° Cuenta:<span>*</sapn></label>
-                <input type="text" name="account" id="cuenta" placeholder="Numero de cuenta">
+                <input type="text" name="account" id="cuenta" placeholder="Numero de cuenta" oninput="formatAccount(this);" required>
             </div>
             </fieldset>
             <fieldset>
             <legend>Datos del cliente</legend>
-            <div>
-                <label for="nombre">Nombre Completo:</label>
-                <input type="text" name="nameClient" id="nombre" placeholder="Nombre del cliente">
-                <label for="doqument">N° Documento:<span>*</sapn></label>
-                <input type="text" name="documentClient" id="doqument" placeholder="N° de Documento">
+            <div class="cliente-sending">
+                <div>
+                    <label for="nombre">Nombre Completo:</label>
+                    <input type="text" name="nameClient" id="nombre" placeholder="Nombre del cliente" oninput="soloLetrasYEspacios(this);">
+                </div>
+                <div>
+                    <label for="doqument">N° Documento:<span>*</sapn></label>
+                    <input type="text" name="documentClient" id="doqument" placeholder="N° de Documento" oninput="separardorMiles(this);" required>
+                </div>
             </div>
             </fieldset>
             <fieldset>
                 <legend>Valor</legend>
-                <label for="valor">Valor B$<span>*</span></label>
-                <input type="text" name="cashBs" id="valor" placeholder="Valor en soberanos">
+                <div>
+                    <label for="valor">Valor B$<span>*</span></label>
+                    <input type="text" name="cashBs" id="valor" placeholder="Valor en soberanos" oninput="separardorMiles(this);" required>
+                </div>
             </fieldset>
             <button type="submit" id="btn-send">Enviar e imprimir</button>
         </form>`
