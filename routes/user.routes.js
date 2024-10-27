@@ -8,5 +8,6 @@ router.post('/register', userController.register);
 router.post('/login', userController.login);
 router.get('/dashboard', authentication.checkAuth, userController.dashboard);
 router.get('/send-transf', authentication.checkAuth, userController.sendTrans);
+router.get('/search-transfers', authentication.checkAuth, userController.getTransfers);
 
 module.exports = router;

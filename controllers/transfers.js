@@ -49,7 +49,83 @@ const sendTransfer = async (req, res) => {
     }
 }
 
+const getTransfers = async (req, res) => {
+    let params = req.body;
+    
+    // Validar que al menos uno de los parámetros esté presente
+    if (!params.search && !params.date) {
+        return res.json({
+            error: true,
+            msg: 'Los parámetros de búsqueda han generado un error'
+        });
+    }
+
+    // Construcción de la consulta
+    let query = {};
+    query.user = req.user.id;
+    // Agregar búsqueda por fecha si está presente
+    if (params.date) {
+        const [year, month, day] = params.date.split('-');
+        params.date = `${day}/${month}/${year}`;
+        query.created_at = { $regex: `^${params.date}` };
+    }
+
+    // Agregar búsqueda por referencia si está presente
+    if (params.search) {
+        if (params.ref === 'fact') {
+            query.fact = params.search;
+        } else if (params.ref === 'dni') {
+            query.documentClient = params.search;
+        }
+    }
+
+    try {
+        // Ejecutar la búsqueda en la base de datos con la consulta construida
+        const transfersGet = await TransferSend.find(query);
+        //console.log(transfersGet);
+
+        if (transfersGet.length === 0) {
+            return res.json({ error: true, msg: 'No se encontraron transferencias con los parámetros proporcionados.' });
+        }
+
+        return res.json({ error: false, data: transfersGet });
+    } catch (error) {
+        console.log(error);
+        return res.json({ error: true, msg: 'Ocurrió un error al buscar las transferencias.' });
+    }
+}
+
+const updateTransfer = (req, res) => {
+    res.json({form: `<div class="data-transfers">
+                <form class="form-update">
+                    <h2>Actualizar transferencia</h2>
+                    <div class="mode-consult">
+                        <label for="referencia">Referencia</label>
+                        <input type="text" name="updReference" id="upd-reference" oninput="soloNumeros(this)">
+                        <button type="submit" id="btn-update">Buscar</button>
+                    </div>
+                </form>
+                <div class="data-transfers-get"></div>
+            </div>`
+    });
+}
+
+const updateTransferPost = async (req, res) =>{
+    const params = req.body
+    if(!params.fact){
+        return res.json({error: true, msg: 'No se ingreso una referencia'})
+    }
+    try {
+        const transfer = await TransferSend.findOne({fact: params.fact, user: req.user.id});
+        res.json({error: null, data: transfer});
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 module.exports = {
-    sendTransfer
+    sendTransfer,
+    getTransfers,
+    updateTransfer,
+    updateTransferPost
 }

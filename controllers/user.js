@@ -112,9 +112,9 @@ const dashboard = async (req, res) => {
     });
 }
 
-const sendTrans =  (req, res) => {
+const sendTrans = (req, res) => {
     return res.json({
-        form:`<form class="form-send-transf">
+        form: `<form class="form-send-transf">
             <fieldset>
             <legend>Datos del banco</legend>
             <div>
@@ -157,10 +157,35 @@ const sendTrans =  (req, res) => {
     });
 }
 
+const getTransfers = (req, res) => {
+    res.json({
+        form: `
+            <div class="data-transfers">
+                <form class="form-search">
+                    <h2>Consulta de trasferencias</h2>
+                    <p>Seleccione tipo de consulta</p>
+                    <div class="mode-consult">
+                        <select name="consult" id="consult">
+                            <option value="fact">Referencia</option>
+                            <option value="dni">Documento </option>
+                        </select>
+                        <input type="text" name="searching" id="searching" oninput="soloNumeros(this)">
+                        <div class="date-search">
+                            <label for="fecha">Por fecha:</label>
+                            <input type="date" name="date" id="date" />
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-search">Buscar</button>
+                </form>
+                <div class="data-transfers-get"></div>
+            </div>
+        `});
+}
 
 module.exports = {
     register,
     login,
     dashboard,
-    sendTrans
+    sendTrans,
+    getTransfers
 }
