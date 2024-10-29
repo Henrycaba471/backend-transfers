@@ -7,5 +7,6 @@ router.post('/send-transfer', sendAuthentication.checkAuth, sendController.sendT
 router.post('/ver-transfers', sendAuthentication.checkAuth, sendController.getTransfers);
 router.get('/update-transfer', sendAuthentication.checkAuth, sendController.updateTransfer);
 router.post('/update', sendAuthentication.checkAuth, sendController.updateTransferPost);
+router.put('/update-transf/:id', sendAuthentication.checkAuth, sendController.updateTransferPut);
 
 module.exports = router;

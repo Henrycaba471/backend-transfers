@@ -51,7 +51,7 @@ const sendTransfer = async (req, res) => {
 
 const getTransfers = async (req, res) => {
     let params = req.body;
-    
+
     // Validar que al menos uno de los parámetros esté presente
     if (!params.search && !params.date) {
         return res.json({
@@ -123,9 +123,38 @@ const updateTransferPost = async (req, res) =>{
     }
 }
 
+const updateTransferPut = async (req, res) => {
+    const transfUpdate = req.params.id;
+    const dataUpdate = req.body;
+
+    dataUpdate.account = dataUpdate.account.replace(/-/g, '');
+    dataUpdate.documentClient = helperFunctions.convertirSinSeparador(dataUpdate.documentClient);
+    dataUpdate.bankEntity = dataUpdate.bankEntity.toLowerCase();
+    dataUpdate.nameClient = dataUpdate.nameClient.toLowerCase();
+    dataUpdate.note = dataUpdate.note.toLowerCase();
+
+    try {
+        const transferUpdate = await TransferSend.findByIdAndUpdate(transfUpdate, dataUpdate, {new: true, runValidators: true});
+
+        if(!transferUpdate){
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        const detailUpdate = await TransferSend.findById(transferUpdate._id).populate({
+            path: 'user',
+            select: 'documento'
+        });
+
+        res.json({error: null, msg: 'Datos actualizados', detailUpdate});
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error al actualizar el usuario', error: error.message });
+    }
+}
+
 module.exports = {
     sendTransfer,
     getTransfers,
     updateTransfer,
-    updateTransferPost
+    updateTransferPost,
+    updateTransferPut
 }

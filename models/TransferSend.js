@@ -37,6 +37,10 @@ const SendSchema = Schema({
         type: Number,
         required: true
     },
+    note: {
+        type: String,
+        default: 'null'
+    },
     created_at: {
         type: String,
         default: colombiaDate
