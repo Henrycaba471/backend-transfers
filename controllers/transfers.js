@@ -241,7 +241,7 @@ const getTransfersReport = async (req, res) => {
     const fechaHoy = new Date().toLocaleDateString();
     const enviadas = [];
     const anuladas = [];
-    const valorPesos = [];
+    const valorPesosEnviadas = [];
 
     try {
 
