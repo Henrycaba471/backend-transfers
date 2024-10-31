@@ -248,6 +248,7 @@ const getTransfersReport = async (req, res) => {
         const transactions = await TransferSend.find({ user: req.user.id, created_at: { $regex: `^${fechaHoy}` } });
 
         transactions.forEach(transaction => {
+
             if (transaction.status === 'anulada') {
                 anuladas.push(transaction);
             } else {
@@ -256,6 +257,8 @@ const getTransfersReport = async (req, res) => {
                 //valorBolivares.value = (valorPesos.value / 0.009).toFixed(0);
             }
         });
+        console.log(enviadas, anuladas, valorPesosEnv);
+
         res.json({ enviadas, anuladas, valorPesosEnv });
 
     } catch (error) {
