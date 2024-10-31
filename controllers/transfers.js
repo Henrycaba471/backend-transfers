@@ -241,7 +241,7 @@ const getTransfersReport = async (req, res) => {
     const fechaHoy = new Date().toLocaleDateString();
     const enviadas = [];
     const anuladas = [];
-    const valorPesosEnviadas = [];
+    const valorPesosEnv = [];
 
     try {
 
@@ -251,12 +251,12 @@ const getTransfersReport = async (req, res) => {
             if (transaction.status === 'anulada') {
                 anuladas.push(transaction);
             } else {
-                valorPesos.push((transaction.cashBs / 0.009).toFixed(0));
+                valorPesosEnv.push((transaction.cashBs / 0.009).toFixed(0));
                 enviadas.push(transaction);
                 //valorBolivares.value = (valorPesos.value / 0.009).toFixed(0);
             }
         });
-        res.json({ enviadas, anuladas, valorPesosEnviadas });
+        res.json({ enviadas, anuladas, valorPesosEnv });
 
     } catch (error) {
         console.log(error);
