@@ -238,7 +238,9 @@ const nullTransfPut = async (req, res) => {
 }
 
 const getTransfersReport = async (req, res) => {
-    const fechaHoy = new Date().toLocaleDateString();
+    const fechaHoy = new Date().toLocaleDateString('es-CO', { timeZone: 'America/Bogota' });
+    console.log(fechaHoy);
+    
     const enviadas = [];
     const anuladas = [];
     const valorPesosEnv = [];
