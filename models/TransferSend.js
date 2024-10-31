@@ -41,6 +41,10 @@ const SendSchema = Schema({
         type: String,
         default: 'null'
     },
+    status: {
+        type: String,
+        default: null
+    },
     created_at: {
         type: String,
         default: colombiaDate

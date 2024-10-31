@@ -96,7 +96,8 @@ const getTransfers = async (req, res) => {
 }
 
 const updateTransfer = (req, res) => {
-    res.json({form: `<div class="data-transfers">
+    res.json({
+        form: `<div class="data-transfers">
                 <form class="form-update">
                     <h2>Actualizar transferencia</h2>
                     <div class="mode-consult">
@@ -110,14 +111,14 @@ const updateTransfer = (req, res) => {
     });
 }
 
-const updateTransferPost = async (req, res) =>{
+const updateTransferPost = async (req, res) => {
     const params = req.body
-    if(!params.fact){
-        return res.json({error: true, msg: 'No se ingreso una referencia'})
+    if (!params.fact) {
+        return res.json({ error: true, msg: 'No se ingreso una referencia' })
     }
     try {
-        const transfer = await TransferSend.findOne({fact: params.fact, user: req.user.id});
-        res.json({error: null, data: transfer});
+        const transfer = await TransferSend.findOne({ fact: params.fact, user: req.user.id });
+        res.json({ error: null, data: transfer });
     } catch (error) {
         console.error(error);
     }
@@ -126,35 +127,153 @@ const updateTransferPost = async (req, res) =>{
 const updateTransferPut = async (req, res) => {
     const transfUpdate = req.params.id;
     const dataUpdate = req.body;
-
     dataUpdate.account = dataUpdate.account.replace(/-/g, '');
     dataUpdate.documentClient = helperFunctions.convertirSinSeparador(dataUpdate.documentClient);
     dataUpdate.bankEntity = dataUpdate.bankEntity.toLowerCase();
     dataUpdate.nameClient = dataUpdate.nameClient.toLowerCase();
     dataUpdate.note = dataUpdate.note.toLowerCase();
 
-    try {
-        const transferUpdate = await TransferSend.findByIdAndUpdate(transfUpdate, dataUpdate, {new: true, runValidators: true});
 
-        if(!transferUpdate){
-            return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    try {
+
+        const validateUpdate = await TransferSend.findById(transfUpdate);
+
+        if (!validateUpdate) {
+            return res.status(404).json({ message: 'Transacción no encontrada' });
+        }
+
+        if (validateUpdate.status === 'anulada') {
+            return res.json({ error: true, message: 'Esta transacción se encuentra anulada no permite modificaciones' });
+        }
+
+        const transferUpdate = await TransferSend.findByIdAndUpdate(transfUpdate, dataUpdate, { new: true, runValidators: true });
+
+        if (!transferUpdate) {
+            return res.status(404).json({ message: 'Transacción no encontrada' });
         }
         const detailUpdate = await TransferSend.findById(transferUpdate._id).populate({
             path: 'user',
             select: 'documento'
         });
 
-        res.json({error: null, msg: 'Datos actualizados', detailUpdate});
+        res.json({ error: null, msg: 'Datos actualizados', detailUpdate });
 
     } catch (error) {
         res.status(500).json({ message: 'Error al actualizar el usuario', error: error.message });
     }
 }
 
+const cancelTransfer = (req, res) => {
+    res.json({
+        form: `<div class="data-transfers">
+        <form class="form-cancel">
+            <h2>Anular transferencia</h2>
+            <div class="mode-consult">
+                <label for="referencia">Referencia</label>
+                <input type="text" name="cancelReference" id="cancel-reference" oninput="soloNumeros(this)">
+                <button type="submit" id="btn-search-cancel">Buscar</button>
+            </div>
+        </form>
+        <div class="data-transfers-get"></div>
+    </div>`
+    });
+}
+
+const getTransfersToAnular = async (req, res) => {
+    let params = req.body;
+
+    try {
+        // Ejecutar la búsqueda en la base de datos con la consulta construida
+        const transfersGet = await TransferSend.findOne({ fact: params.ref, user: req.user.id });
+
+        if (!transfersGet) {
+            return res.json({ error: true, msg: 'No se encontró ningún dato con la referencia: ' + params.ref });
+        }
+
+        return res.json({ error: false, data: transfersGet });
+    } catch (error) {
+        console.log(error);
+        return res.json({ error: true, msg: 'Ocurrió un error al buscar las transferencias.' });
+    }
+}
+
+const nullTransfPut = async (req, res) => {
+    const params = req.body;
+    //console.log(params);
+    params.note = 'anulada';
+    params.status = 'anulada';
+
+    try {
+
+        const validateAbort = await TransferSend.findById(params.idToNull);
+
+        if (!validateAbort) {
+            return res.status(404).json({ message: 'Transacción no encontrada' });
+        }
+
+        if (validateAbort.status === 'anulada') {
+            return res.json({ error: true, message: 'Esta transacción ya se encuentra anulada' });
+        }
+
+        const transferGetNull = await TransferSend.findByIdAndUpdate(
+            { _id: params.idToNull, user: req.user.id },
+            { note: params.note, status: params.status },
+            { new: true, runValidators: true }
+        );
+
+        if (!transferGetNull) {
+            return res.status(404).json({ message: 'Transacción no encontrada' });
+        }
+        const detailToNull = await TransferSend.findById(transferGetNull._id).populate({
+            path: 'user',
+            select: 'documento'
+        });
+
+        res.json({ error: null, msg: 'Transacción anulada', detailToNull });
+
+    } catch (error) {
+        res.status(500).json({ message: 'Error al actualizar el usuario', error: error.message });
+    }
+}
+
+const getTransfersReport = async (req, res) => {
+    const fechaHoy = new Date().toLocaleDateString();
+    const enviadas = [];
+    const anuladas = [];
+    const valorPesos = [];
+
+    try {
+
+        const transactions = await TransferSend.find({ user: req.user.id, created_at: { $regex: `^${fechaHoy}` } });
+
+        transactions.forEach(transaction => {
+            if (transaction.status === 'anulada') {
+                anuladas.push(transaction);
+            } else {
+                valorPesos.push((transaction.cashBs / 0.009).toFixed(0));
+                enviadas.push(transaction);
+                //valorBolivares.value = (valorPesos.value / 0.009).toFixed(0);
+            }
+        });
+        res.json({ enviadas, anuladas, valorPesosEnviadas });
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
+
+
 module.exports = {
     sendTransfer,
     getTransfers,
     updateTransfer,
     updateTransferPost,
-    updateTransferPut
+    updateTransferPut,
+    cancelTransfer,
+    getTransfersToAnular,
+    nullTransfPut,
+    getTransfersReport
 }
