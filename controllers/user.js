@@ -182,10 +182,46 @@ const getTransfers = (req, res) => {
         `});
 }
 
+const changePassword = async (req, res) => {
+    const params = req.body;
+
+    if (!params.oldPass || !params.newPass || !params.confirNewPass) {
+        return res.json({ error: true, msg: 'Los campos del formulario son obligatorios' });
+    }
+
+    if (params.newPass !== params.confirNewPass) {
+        return res.json({ error: true, msg: 'Las claves no coinciden' });
+    }
+    try {
+        const userToChangePass = await User.findById({ _id: req.user.id });
+
+        if (!userToChangePass) {
+            return res.json({ error: true, msg: 'Se ha generado un error al intentar cambiar la clave, intente mas tarde' });
+        }
+
+        const isMatch = bcrypt.compareSync(params.oldPass, userToChangePass.password);
+
+        if (!isMatch) {
+            return res.json({ error: true, msg: 'La clave actual es incorrecta' });
+        }
+
+        const encryptNewPass = await bcrypt.hash(params.newPass, 10);
+        userToChangePass.password = encryptNewPass;
+
+        await userToChangePass.save();
+        res.json({ error: null, msg: 'La clave se ha cambiado exitosamente' });
+
+    } catch (error) {
+        console.log(error);
+
+    }
+}
+
 module.exports = {
     register,
     login,
     dashboard,
     sendTrans,
-    getTransfers
+    getTransfers,
+    changePassword
 }
