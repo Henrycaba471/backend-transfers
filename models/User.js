@@ -33,6 +33,14 @@ const UserSchema = Schema({
         type: String,
         required: true
     },
+    email: {
+        type: String,
+        required: true
+    },
+    address: {
+        type: String,
+        default: 'El Tarra'
+    },
     created_at: {
         type: Date,
         default: Date.now()

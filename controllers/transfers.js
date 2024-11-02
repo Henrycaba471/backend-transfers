@@ -65,7 +65,10 @@ const getTransfers = async (req, res) => {
     query.user = req.user.id;
     // Agregar búsqueda por fecha si está presente
     if (params.date) {
-        const [year, month, day] = params.date.split('-');
+        let [year, month, day] = params.date.split('-');
+
+        day = parseInt(day, 10).toString();
+
         params.date = `${day}/${month}/${year}`;
         query.created_at = { $regex: `^${params.date}` };
     }

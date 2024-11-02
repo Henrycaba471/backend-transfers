@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const jwt = require('../helpers/jwt');
+const path = require('path');
+const fs = require('fs');
 
 const register = async (req, res) => {
     let params = req.body;
@@ -112,6 +114,77 @@ const dashboard = async (req, res) => {
     });
 }
 
+const getUser = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const serverUrl = req.protocol + '://' + req.get('host');
+
+        const user = await User.findById(userId).select('-password -__v');
+        if (!user) {
+            res.status(404).json({ error: true, msg: 'No se encontrado el usuario' });
+        }
+
+        res.json({ error: null, user, serverUrl });
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+const uploadProfile = async (req, res) => {
+
+    if (!req.file) {
+        return res.status(404).send({
+            status: 'error',
+            msg: 'No se ha seleccionado una imagen'
+        });
+    }
+
+    const ext = path.extname(req.file.originalname);
+
+    if (ext !== '.png' && ext !== '.jpg' && ext !== '.jpeg' && ext !== '.gif' && ext !== '.webp') {
+        console.log('archivo ' + ext + ' no valido');
+        const filePath = req.file.path;
+        fs.unlinkSync(filePath);
+        return res.status(400).send({
+            status: 'Error',
+            msg: 'El archivo seleccionado no es valido'
+        });
+    }
+
+    try {
+
+        const userUpdate = await User.findOneAndUpdate(
+            { _id: req.user.id },
+            { image: req.file.path },
+            { new: true }
+
+        );
+
+        if (!userUpdate) {
+            return res.status(404).send({
+                status: 'error',
+                msg: 'Usuario no encontrado'
+            });
+        }
+
+        res.status(200).send({
+            status: 'success',
+            user: userUpdate,
+            msg: 'La foto de perfil se cambio exitosamente'
+            //file: req.file,
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({
+            status: 'error',
+            msg: 'Ocurrió un error al actualizar la imagen de perfil'
+        });
+    }
+}
+
+
 const sendTrans = (req, res) => {
     return res.json({
         form: `<form class="form-send-transf">
@@ -171,7 +244,7 @@ const getTransfers = (req, res) => {
                         </select>
                         <input type="text" name="searching" id="searching" oninput="soloNumeros(this)">
                         <div class="date-search">
-                            <label for="fecha">Por fecha:</label>
+                            <label for="date">Por fecha:</label>
                             <input type="date" name="date" id="date" />
                         </div>
                     </div>
@@ -223,5 +296,7 @@ module.exports = {
     dashboard,
     sendTrans,
     getTransfers,
-    changePassword
+    changePassword,
+    getUser,
+    uploadProfile
 }
