@@ -107,10 +107,11 @@ const login = async (req, res) => {
 }
 
 const dashboard = async (req, res) => {
-
+    const serverUrl = req.protocol + '://' + req.get('host');
     return res.status(200).json({
         status: 200,
-        user: req.user
+        user: req.user,
+        serverUrl
     });
 }
 
@@ -154,12 +155,13 @@ const uploadProfile = async (req, res) => {
 
     try {
 
+        const serverUrl = req.protocol + '://' + req.get('host');
         const userUpdate = await User.findOneAndUpdate(
             { _id: req.user.id },
             { image: req.file.path },
             { new: true }
 
-        );
+        ).select('-__v -password -_id');
 
         if (!userUpdate) {
             return res.status(404).send({
@@ -167,11 +169,13 @@ const uploadProfile = async (req, res) => {
                 msg: 'Usuario no encontrado'
             });
         }
-
+        req.user.profile = userUpdate.image
         res.status(200).send({
             status: 'success',
             user: userUpdate,
-            msg: 'La foto de perfil se cambio exitosamente'
+            msg: 'La foto de perfil se cambio exitosamente',
+            serverUrl,
+            profile: req.user.profile
             //file: req.file,
         });
 
