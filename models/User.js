@@ -41,6 +41,10 @@ const UserSchema = Schema({
         type: String,
         default: 'El Tarra'
     },
+    resetToken: {
+        type: String,
+        default: undefined
+    },
     created_at: {
         type: Date,
         default: Date.now()

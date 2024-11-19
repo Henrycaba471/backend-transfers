@@ -1,5 +1,8 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+const jwtSimple = require('jwt-simple')
 const jwt = require('../helpers/jwt');
 const path = require('path');
 const fs = require('fs');
@@ -294,6 +297,124 @@ const changePassword = async (req, res) => {
     }
 }
 
+const forgotPasswordForm = (req, res) => {
+    res.json({
+        form: `<div class="forgot-pass-div" id="modal">
+        <form class="reset-password" id="form-reset-password">
+            <span class="close" id="close">&times;</span>
+            <img src="Assets/imgs/logo.png" alt="logo" width="200">
+            <p>Por favor ingrese su correo electrónico con el cual se encuentra registrado</p>
+            <h4>Recuperar mi clave</h4>
+            <label for="user">email:</label>
+            <input type="email" name="email" id="email" placeholder="Ingrese su email">
+            <button type="submit" id="btn-reset-pass">Recuperar</button>
+        </form>
+    </div>`});
+}
+
+
+const resetPassword = async (req, res) => {
+    const params = req.body;
+    const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!params.email || !regexEmail.test(params.email)) {
+        return res.json({ error: true, msg: 'Invalid email address' });
+    }
+
+    const message = 'El link de verificación fue enviado al correo electrónico';
+    let verificationLink;
+
+    try {
+        const user = await User.findOne({ email: params.email });
+        if (!user) {
+            return res.json({ error: true, msg: 'El correo electrónico ingresado no se encuentra registrado' });
+        }
+
+        const secretKey = process.env.SECRET_KEY;
+        const payload = {
+            _id: user._id,
+            email: user.email,
+            iat: Date.now(), // Fecha de emisión
+            exp: Date.now() + 10 * 60 * 1000, // Expiración en 10 minutos
+        };
+
+        const token = jwtSimple.encode(payload, secretKey);
+        verificationLink = `http://localhost:5500/reset-password.html?token=${token}`;
+        user.resetToken = token;
+
+        // Configura Nodemailer
+        const transporter = nodemailer.createTransport({
+            service: 'gmail', // Puedes usar otros servicios como Outlook o SMTP personalizado
+            auth: {
+                user: process.env.EMAIL_USER, // Tu correo electrónico
+                pass: process.env.EMAIL_PASS, // Contraseña o clave de aplicación
+            },
+        });
+
+        // Opciones del correo
+        const mailOptions = {
+            from: process.env.EMAIL_USER, // Tu correo electrónico
+            to: user.email, // Correo del destinatario
+            subject: 'Restablecimiento de contraseña',
+            html: `
+                <p>Hola, ${user.email}</p>
+                <p>Hemos recibido una solicitud para restablecer tu contraseña. Haz clic en el siguiente enlace para continuar:</p>
+                <a href="${verificationLink}">${verificationLink}</a>
+                <p>Este enlace es válido por 10 minutos.</p>
+                <p>Si no solicitaste este cambio, por favor ignora este mensaje.</p>
+            `,
+        };
+
+        // Envía el correo
+        await transporter.sendMail(mailOptions);
+
+        // Guarda el token en la base de datos
+        await user.save();
+
+        res.json({ message });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: true, msg: 'Error interno del servidor' });
+    }
+};
+
+
+
+const createNewPassword = async (req, res) => {
+    const { token, newPassword } = req.body;
+    console.log(token, newPassword);
+    
+    try {
+        if (!token || !newPassword) {
+            return res.json({ error: true, msg: 'Se ha generado un error al actualizar la contraseña' })
+        }
+
+        let decodeToken;
+
+        try {
+            decodeToken = jwtSimple.decode(token, process.env.SECRET_KEY);
+        } catch (error) {
+            return res.status(401).json({ error: true, msg: 'Token no válido o expirado' });
+        }
+
+        // Buscar el usuario por el id del token
+        const user = await User.findById(decodeToken._id);
+        if (!user) {
+            return res.status(404).json({ error: true, msg: 'Usuario no encontrado' });
+        }
+
+        // Actualizar la contraseña
+        user.password = newPassword; // Aquí deberías encriptar la nueva contraseña usando bcrypt o una herramienta similar
+        //await user.save();
+
+        res.json({ error: null, msg: 'Contraseña cambiada correctamente' });
+
+    } catch (error) {
+        console.log(error);
+    }
+
+}
+
 module.exports = {
     register,
     login,
@@ -302,5 +423,8 @@ module.exports = {
     getTransfers,
     changePassword,
     getUser,
-    uploadProfile
+    uploadProfile,
+    forgotPasswordForm,
+    resetPassword,
+    createNewPassword
 }

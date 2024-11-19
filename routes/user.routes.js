@@ -15,15 +15,19 @@ const storage = multer.diskStorage({
     }
 });
 
-const uploads = multer({ storage })
+const uploads = multer({ storage });
 
 router.post('/register', userController.register);
 router.post('/login', userController.login);
 router.post('/change-password', authentication.checkAuth, userController.changePassword);
 router.post('/upload-profile', [authentication.checkAuth, uploads.single('profile')], userController.uploadProfile);
+router.post('/reset-password', userController.resetPassword);
+router.put('/reset-password-user', userController.createNewPassword);
 router.get('/dashboard', authentication.checkAuth, userController.dashboard);
 router.get('/user', authentication.checkAuth, userController.getUser);
 router.get('/send-transf', authentication.checkAuth, userController.sendTrans);
 router.get('/search-transfers', authentication.checkAuth, userController.getTransfers);
+router.get('/forgot-password', userController.forgotPasswordForm);
+
 
 module.exports = router;
