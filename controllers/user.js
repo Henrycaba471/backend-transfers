@@ -339,7 +339,7 @@ const resetPassword = async (req, res) => {
         };
 
         const token = jwtSimple.encode(payload, secretKey);
-        verificationLink = `https://backend-transfers.onrender.com/reset-password.html?token=${token}`;
+        verificationLink = `https://henrycaba471.github.io/xpresstransfers/reset-password.html?token=${token}`;
         user.resetToken = token;
 
         // Configura Nodemailer
