@@ -339,7 +339,8 @@ const resetPassword = async (req, res) => {
         };
 
         const token = jwtSimple.encode(payload, secretKey);
-        verificationLink = `https://henrycaba471.github.io/xpresstransfers/reset-password.html?token=${token}`;
+        //verificationLink = `https://henrycaba471.github.io/xpresstransfers/reset-password.html?token=${token}`;
+        verificationLink = `http://127.0.0.1:5500/reset-password.html?token=${token}`;
         user.resetToken = token;
 
         // Configura Nodemailer
@@ -382,8 +383,8 @@ const resetPassword = async (req, res) => {
 
 const createNewPassword = async (req, res) => {
     const { token, newPassword } = req.body;
-    console.log(token, newPassword);
-    
+    //console.log(token, newPassword);
+
     try {
         if (!token || !newPassword) {
             return res.json({ error: true, msg: 'Se ha generado un error al actualizar la contraseña' })
@@ -404,15 +405,26 @@ const createNewPassword = async (req, res) => {
         }
 
         // Actualizar la contraseña
-        user.password = newPassword; // Aquí deberías encriptar la nueva contraseña usando bcrypt o una herramienta similar
-        //await user.save();
+        const encryptPass = await bcrypt.hash(newPassword, 10);
+        //console.log('Contraseña encriptada:', encryptPass);
+        user.password = encryptPass; // Aquí deberías encriptar la nueva contraseña usando bcrypt o una herramienta similar
+        await user.save();
 
-        res.json({ error: null, msg: 'Contraseña cambiada correctamente' });
+        res.json({ error: null, msg: 'Contraseña cambiada correctamente', encryptPass });
 
     } catch (error) {
         console.log(error);
     }
+}
 
+const supportContact = (req, res) => {
+    const emailUser = req.user.email;
+    if(!emailUser){
+        return res.status(404).json({ error: true, msg: 'No se ha encontrado tu email' });
+    }
+    //console.log(emailUser);
+
+    res.json({ email: emailUser});
 }
 
 module.exports = {
@@ -426,5 +438,6 @@ module.exports = {
     uploadProfile,
     forgotPasswordForm,
     resetPassword,
-    createNewPassword
+    createNewPassword,
+    supportContact
 }

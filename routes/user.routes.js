@@ -27,7 +27,8 @@ router.get('/dashboard', authentication.checkAuth, userController.dashboard);
 router.get('/user', authentication.checkAuth, userController.getUser);
 router.get('/send-transf', authentication.checkAuth, userController.sendTrans);
 router.get('/search-transfers', authentication.checkAuth, userController.getTransfers);
-router.get('/forgot-password', userController.forgotPasswordForm);
+router.get('/forgot-password', userController.forgotPasswordForm),
+router.get('/support-contact', authentication.checkAuth, userController.supportContact);
 
 
 module.exports = router;
