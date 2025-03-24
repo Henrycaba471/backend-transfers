@@ -256,7 +256,7 @@ const getTransfersReport = async (req, res) => {
             if (transaction.status === 'anulada') {
                 anuladas.push(transaction);
             } else {
-                valorPesosEnv.push((transaction.cashBs / process.env.TASA_DE_CAMBIO).toFixed(0));
+                valorPesosEnv.push((transaction.cashBs * 83.33).toFixed(0));
                 enviadas.push(transaction);
                 //valorBolivares.value = (valorPesos.value / 0.009).toFixed(0);
             }
